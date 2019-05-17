@@ -1,0 +1,42 @@
+version: "2"
+services:
+
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    working_dir: /application
+    volumes:
+      - .:/application
+      - ./storage-db:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_DATABASE: test
+
+  webserver:
+    image: nginx:alpine
+    container_name: webserver
+    working_dir: /application
+    volumes:
+     - .:/application
+     - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+     - "8081:80"
+
+  php-fpm:
+    build: docker/php-fpm
+    container_name: php-fpm
+    working_dir: /application
+    volumes:
+      - ./server:/application
+     # - .:/application
+      - ./docker/php-fpm/php-ini-overrides.ini:/etc/php/7.2/fpm/conf.d/99-overrides.ini
+
+  phpmyadmin:
+    container_name: myadmin
+    links:
+        - 'mysql:db'
+    ports:
+        - '8080:80'
+    image: phpmyadmin/phpmyadmin
